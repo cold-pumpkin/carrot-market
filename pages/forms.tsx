@@ -2,9 +2,10 @@ import React, { use, useState } from "react";
 import { FieldError, FieldErrors, useForm } from "react-hook-form";
 
 interface LoginFrom {
-    username:string;
-    password:string;
+    username: string;
+    password: string;
     email: string;
+    errors?: string;
 }
 
 export default function Forms() {
@@ -13,13 +14,23 @@ export default function Forms() {
         handleSubmit,
         formState: {
             errors
-        }
+        },
+        watch,
+        setError,
+        setValue,
+        reset,
+        resetField
     } = useForm<LoginFrom>({
         mode: "onChange"
     });
 
     const onValid = (data:LoginFrom) => {
         console.log("I'm valid!");
+        
+        // if user name alreay exists 
+        setError("username", {
+            message: "Username alreay exists!"
+        });
     }
 
     const onInvalid = (errors:FieldErrors) => {
@@ -39,6 +50,7 @@ export default function Forms() {
                 type="text" 
                 placeholder="Username" 
             />
+            {/* {errors.username?.message} */}
 
             <input 
                 {...register("email", {
