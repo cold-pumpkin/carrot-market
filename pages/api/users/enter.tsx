@@ -1,7 +1,10 @@
+import twilio from "twilio";
 import { NextApiRequest, NextApiResponse } from "next";
 import withHandler, { ResponseType } from "@libs/server/withHandler";
 import client from "@libs/server/client";
 import { prisma } from "@prisma/client";
+
+const twilioClient = twilio(process.env.TWILIO_SID, process.env.TWILIO_TOKEN);
 
 async function handler(
 	req: NextApiRequest, 
@@ -26,7 +29,7 @@ async function handler(
 		update: {},
 	});
 	*/
-	const payload = Math.floor(100000 + Math.random() * 900000) + "";
+	const payload = Math.floor(100000 + Math.random() * 900000) + "";	// 6자리 랜덤 숫자
 	const token = await client.token.create({
 		data: {
 			payload,
@@ -45,6 +48,16 @@ async function handler(
 	})
 
 	console.log("token : ", token);
+
+	if (phone) {
+		const message = await twilioClient.messages.create({
+			messagingServiceSid: process.env.TWILIO_MSID,
+			to: process.env.MY_PHONE!,	// 메시지 확인을 위해 body의 phone 대신 내 번호 셋팅
+			body: `Your login token is ${payload}.`
+		});
+		console.log("message : ", message);
+	}
+	
 
 	res.status(200).end();
 
