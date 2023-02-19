@@ -1,4 +1,5 @@
 import twilio from "twilio";
+import nodemailer from "nodemailer";
 import { NextApiRequest, NextApiResponse } from "next";
 import withHandler, { ResponseType } from "@libs/server/withHandler";
 import client from "@libs/server/client";
@@ -55,7 +56,30 @@ async function handler(
 			to: process.env.MY_PHONE!,	// 메시지 확인을 위해 body의 phone 대신 내 번호 셋팅
 			body: `Your login token is ${payload}.`
 		});
+
 		console.log("message : ", message);
+
+	} else if (email) {
+		const mail = await nodemailer.createTransport({
+			service: 'Gmail',
+    	auth: { 
+				user: process.env.MY_EMAIL, 
+				pass: process.env.MY_APP_PW 
+			},
+			tls: {
+				rejectUnauthorized: false,
+			},
+		});
+
+		const mailOptions = {
+			to: process.env.MY_EMAIL,
+			subject: '[carrot market]가입 인증 메일',
+			html: `Your token is <strong>${payload}</strong>`,
+		}
+
+		const message = await mail.sendMail(mailOptions);
+		console.log("message: ", message);
+
 	}
 	
 
