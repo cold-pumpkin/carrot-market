@@ -1,13 +1,17 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import withHandler from "@libs/server/withHandler";
+import withHandler, { ResponseType } from "@libs/server/withHandler";
 import client from "@libs/server/client";
 import { prisma } from "@prisma/client";
 
 async function handler(
-	req: NextApiRequest, res:NextApiResponse
+	req: NextApiRequest, 
+	res: NextApiResponse<ResponseType>
 ) {
 	const { email, phone } = req.body;
-	const payload = phone ? { phone: +phone } : { email };
+	const user = phone ? { phone: +phone } : email ? { email } : null;
+	if (!user) {
+		return res.status(400).json({ ok: false });
+	}
 	
 	// upsert
 	/*
@@ -22,18 +26,18 @@ async function handler(
 		update: {},
 	});
 	*/
-
+	const payload = Math.floor(100000 + Math.random() * 900000) + "";
 	const token = await client.token.create({
 		data: {
-			payload: "1234",
+			payload,
 			user : {
 				connectOrCreate: {
 					where: {
-						...payload,
+						...user,
 					},	
 					create: {
 						name: "Anonymous",
-						...payload,
+						...user	,
 					},
 				}
 			}
