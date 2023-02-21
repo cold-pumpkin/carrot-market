@@ -12,7 +12,7 @@ export default function withHandler(
     fn: (req: NextApiRequest, res:NextApiResponse) => void
 ) {
     // 로직 실행 후 넘겨받은 함수를 실행
-    return async function(req: NextApiRequest, res:NextApiResponse) {
+    return async function(req: NextApiRequest, res:NextApiResponse) : Promise<any> {
         if (req.method !== method) {
             return res.status(405).end();
         }
