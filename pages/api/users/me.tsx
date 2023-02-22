@@ -26,4 +26,8 @@ async function handler(
 	return res.status(200).end();
 }
 
-export default withApiSession(withHandler("GET", handler));
+export default withApiSession(withHandler({
+	method: "GET", 
+	handler: handler, 
+	isPrivate: true		// true인 경우 로그인 유저만 호출 가능
+}));	

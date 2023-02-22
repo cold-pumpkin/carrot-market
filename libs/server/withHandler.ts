@@ -7,21 +7,31 @@ export interface ResponseType {
 }
 
 
-export default function withHandler(
-    method:"GET"|"POST"|"DELETE", 
-    fn: (req: NextApiRequest, res:NextApiResponse) => void
-) {
-    // 로직 실행 후 넘겨받은 함수를 실행
-    return async function(req: NextApiRequest, res:NextApiResponse) : Promise<any> {
-        if (req.method !== method) {
-            return res.status(405).end();
-        }
-        try {
-            await fn(req, res)
-        } catch(error)  {
-            console.log(error);
-            return res.status(500).json({ error });
-        }
-    };
+interface ConfigType {
+	method:"GET"|"POST"|"DELETE", 
+	handler: (req: NextApiRequest, res:NextApiResponse) => void,
+	isPrivate?: boolean		// default : false
+}
 
+export default function withHandler(
+	{ method, 
+		handler, 
+		isPrivate = true 
+	}: ConfigType
+) {
+	// 로직 실행 후 넘겨받은 함수를 실행
+	return async function(req: NextApiRequest, res:NextApiResponse) : Promise<any> {
+			if (req.method !== method) {
+					return res.status(405).end();
+			}
+			if (isPrivate && !req.session.user) {
+				return res.status(401).json({ ok: false, error: "Please log in!" });
+			}
+			try {
+					await handler(req, res)
+			} catch(error)  {
+					console.log(error);
+					return res.status(500).json({ error });
+			}
+	};
 }
