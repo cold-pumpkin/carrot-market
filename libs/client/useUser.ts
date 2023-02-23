@@ -1,21 +1,14 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import userSWR from "swr"; 
+
+const fetcher = (url: string) => fetch(url).then(response => response.json());
 
 // 로그인 유저 정보를 가져오는 Hook
 export default function userUser() {
-  const [user, setUser] = useState();
+  const { data, error } = userSWR("/api/users/me", fetcher);  // SWR이 해당 URL에 해당하는 값 캐싱/업데이트
   const router = useRouter();
-  
-  useEffect(() => {
-    fetch("/api/users/me")
-    .then(response => response.json())
-    .then(data => {
-      if (!data.ok) {
-        return router.replace("/enter");    // push는 리다이렉트 후 뒤로가기 기록에 남음 (로그인 해야하므로 뒤로 가기 할 필요 없으니 replace)
-      }
-      setUser(data.profile);
-    })
-  }, [router]);
-  
-  return user;
+
+
+  return data;
 }
