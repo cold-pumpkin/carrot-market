@@ -88,7 +88,7 @@ async function handler(
 }
 
 export default withHandler({
-	method: "POST", 
+	methods: ["POST"], 
 	handler,
 	isPrivate: false		// false인 경우 로그인 없이 호출 가능
 });	

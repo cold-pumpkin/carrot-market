@@ -6,32 +6,31 @@ export interface ResponseType {
 	[key: string]: any;
 }
 
+type method = "GET" | "POST" | "DELETE";
 
 interface ConfigType {
-	method:"GET"|"POST"|"DELETE", 
+	methods: method[], 
 	handler: (req: NextApiRequest, res:NextApiResponse) => void,
 	isPrivate?: boolean		// default : false
 }
 
-export default function withHandler(
-	{ method, 
+export default function withHandler({ methods, 
 		handler, 
-		isPrivate = true 
-	}: ConfigType
-) {
+		isPrivate = true, 
+}: ConfigType) {
 	// 로직 실행 후 넘겨받은 함수를 실행
 	return async function(req: NextApiRequest, res:NextApiResponse) : Promise<any> {
-			if (req.method !== method) {
-					return res.status(405).end();
-			}
-			if (isPrivate && !req.session.user) {
-				return res.status(401).json({ ok: false, error: "Please log in!" });
-			}
-			try {
-					await handler(req, res)
-			} catch(error)  {
-					console.log(error);
-					return res.status(500).json({ error });
-			}
+		if (req.method && !methods.includes(req.method as any)) {
+				return res.status(405).end();
+		}
+		if (isPrivate && !req.session.user) {
+			return res.status(401).json({ ok: false, error: "Please log in!" });
+		}
+		try {
+				await handler(req, res)
+		} catch(error)  {
+				console.log(error);
+				return res.status(500).json({ error });
+		}
 	};
 }

@@ -8,33 +8,45 @@ async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseType>
 ) {
-  const { 
-    body : { name, price, description },
-    session : { user },
-  } = req;
+  if (req.method === "GET") {
+    const products = await client.product.findMany({});
 
-  const product = await client.product.create({
-    data: {
-      name, 
-      price: +price,   // 숫자 타입으로 변경
-      description,
-      image: "XX",
-      user: {
-        connect: {
-          id: user?.id,
+    res.json({
+      ok: true,
+      products,
+    });
+  }
+
+  if (req.method === "POST") {
+    const { 
+      body : { name, price, description },
+      session : { user },
+    } = req;
+  
+    const product = await client.product.create({
+      data: {
+        name, 
+        price: +price,   // 숫자 타입으로 변경
+        description,
+        image: "XX",
+        user: {
+          connect: {
+            id: user?.id,
+          }
         }
-      }
-    },
-  });
-
-  res.json({
-    ok: true,
-    product,
-  });
+      },
+    });
+  
+    res.json({
+      ok: true,
+      product,
+    });
+  }
+  
 }
 
 export default withApiSession(withHandler({
-	method: "POST", 
+	methods: ["GET", "POST"], 
 	handler: handler, 
 	isPrivate: true		// true인 경우 로그인 유저만 호출 가능
 }));	

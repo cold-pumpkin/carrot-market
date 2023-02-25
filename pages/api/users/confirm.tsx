@@ -47,7 +47,7 @@ async function handler(
 }
 
 export default withApiSession(withHandler({
-	method: "GET", 
+	methods: ["GET"], 
 	handler: handler, 
 	isPrivate: true		// true인 경우 로그인 유저만 호출 가능
 }));
