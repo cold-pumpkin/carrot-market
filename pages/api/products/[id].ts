@@ -25,10 +25,31 @@ async function handler(
       },
     },
   });
+
+  // releated products 조회
+  const terms = product?.name.split(" ").map(word => ({
+    name: {
+      contains: word,
+    }
+  }));
+
+  const releatedProducts = await client.product.findMany({
+    where: {
+      OR: terms,
+      AND: {
+        id: {
+          not: product?.id,
+        }
+      }
+    },
+  })
   
+  console.log(releatedProducts);
+
   res.json({ 
     ok: true, 
-    product 
+    product,
+    releatedProducts,
   });
 }
 
