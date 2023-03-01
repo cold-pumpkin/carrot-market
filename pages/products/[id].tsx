@@ -2,11 +2,14 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import Button from "../../components/button";
 import Layout from "../../components/layout";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
+import useUser from "@libs/client/useUser";
 import Link from "next/link";
 import { Product, User } from "@prisma/client";
 import useMutation from "@libs/client/useMutation";
 import { cls } from "@libs/client/utils";
+
+
 interface ProductWithUser extends Product {
   user: User;
 }
@@ -19,16 +22,22 @@ interface ItemDetailResponse {
 }
 
 const ItemDetail: NextPage = () => {
+  const { user, isLoading } = useUser();
   const router = useRouter();
   
-  const { data, mutate } = useSWR<ItemDetailResponse>(router.query.id ? `/api/products/${router.query.id}` : null);
+  // Unbound Mutation
+  const { mutate } = useSWRConfig();
+  const { data, mutate: boundMutate } = useSWR<ItemDetailResponse>(
+    router.query.id ? `/api/products/${router.query.id}` : null
+  );
   console.log('data', data);
 
   const [toggleFavorite] = useMutation(`/api/products/${router.query.id}/favorite`);
   const onFavoriteClick = () => {
     if (!data) return;
     // Optimistic UI Update : UI만 먼저 변경하고 서버 요청
-    mutate({ ...data, isLiked: !data.isLiked }, false); // revalidate 없이 캐시 값(isLiked)만 변경
+    boundMutate(prev => prev && { ...prev, isLiked: !prev.isLiked }, false); // false 옵션 : revalidate 없이 캐시 값(isLiked)만 변경
+    //mutate("/api/users/me", (prev: any) => ({ ok: !prev.ok }), false); // Unbound Mutation : key를 통해 useUser 훅에 있는 데이터의 값을 바꿀 수 있음
     toggleFavorite({});
   };
 
