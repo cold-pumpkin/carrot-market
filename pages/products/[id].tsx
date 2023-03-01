@@ -27,8 +27,8 @@ const ItemDetail: NextPage = () => {
   const [toggleFavorite] = useMutation(`/api/products/${router.query.id}/favorite`);
   const onFavoriteClick = () => {
     if (!data) return;
-    mutate({ ...data, isLiked: !data.isLiked }, false);
-    // Optimistic UI Update
+    // Optimistic UI Update : UI만 먼저 변경하고 서버 요청
+    mutate({ ...data, isLiked: !data.isLiked }, false); // revalidate 없이 캐시 값(isLiked)만 변경
     toggleFavorite({});
   };
 
