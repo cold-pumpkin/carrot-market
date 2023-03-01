@@ -1,55 +1,67 @@
-import type { NextPage } from "next";
-import FloatingButton from "@components/floating-button";
-import Item from "@components/item";
-import Layout from "@components/layout";
-import useUser from "@libs/client/useUser";
-import Head from "next/head";
-import useSWR from "swr";
-import { Product } from "@prisma/client";
 
-interface ProductsResponse {
-  ok: boolean;
-  products: Product[];
+
+import { NextApiRequest, NextApiResponse } from "next";
+import withHandler, { ResponseType } from "@libs/server/withHandler";
+import client from "@libs/server/client";
+import { withApiSession } from "@libs/server/withSession";
+
+async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<ResponseType>
+) {
+  //const { id } = req.query;
+  const { query: {id}, session: {user} } = req;
+  const product = await client.product.findUnique({
+    where: {
+      id: Number(id),
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          avatar: true,
+        },
+      },
+    },
+  });
+  const terms = product?.name.split(" ").map((word) => ({
+    name: {
+      contains: word,
+    },
+  }));
+  const relatedProducts = await client.product.findMany({
+    where: {
+      OR: terms,
+      AND: {
+        id: {
+          not: product?.id,
+        },
+      },
+    },
+  });
+
+  const isLike = Boolean(await client.favorite.findFirst({
+    where: {
+      productId: product?.id,
+      userId: user?.id,
+    },
+    select: {
+      id: true,
+    }
+  }));
+
+  res.json({ 
+    ok: true, 
+    product, 
+    isLike,
+    relatedProducts 
+  });
 }
 
-const Home: NextPage = () => {
-  const { user, isLoading } = useUser();
-  const { data } = useSWR<ProductsResponse>("/api/products");
-  return (
-    <Layout title="홈" hasTabBar>
-      <Head>
-        <title>Home</title>
-      </Head>
-      <div className="flex flex-col space-y-5 divide-y">
-        {data?.products?.map((product) => (
-          <Item
-            id={product.id}
-            key={product.id}
-            title={product.name}
-            price={product.price}
-            hearts={1}
-          />
-        ))}
-        <FloatingButton href="/products/upload">
-          <svg
-            className="h-6 w-6"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-            />
-          </svg>
-        </FloatingButton>
-      </div>
-    </Layout>
-  );
-};
-
-export default Home;
+export default withApiSession(
+  withHandler({
+    methods: ["GET"],
+    handler,
+  })
+);
