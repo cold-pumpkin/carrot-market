@@ -7,6 +7,8 @@ import { Post, User, Answer } from "@prisma/client";
 import Link from "next/link";
 import useMutation from "@libs/client/useMutation";
 import { cls } from "@libs/client/utils";
+import { useForm } from "react-hook-form";
+import { useEffect } from "react";
 
 interface AnswerWithUser extends Answer {
   user: User;
@@ -27,10 +29,21 @@ interface CommunityPostResponse {
   isInterested: boolean;
 }
 
+interface AnswerForm {
+  answer: string;
+}
+
+interface AnswerResponse {
+  ok: boolean;
+  response: Answer;
+}
+
 const CommunityPostDetail: NextPage = () => {
   const router = useRouter();
+  const { register, handleSubmit, reset } = useForm<AnswerForm>();
   const { data, mutate } = useSWR<CommunityPostResponse>(router.query.id ? `/api/posts/${router.query.id}` : null);
-  const [interest] = useMutation(`/api/posts/${router.query.id}/interest`);
+  const [interest, { loading }] = useMutation(`/api/posts/${router.query.id}/interest`);
+  const [sendAnswer, { data: answerData, loading: answerLoading }] = useMutation<AnswerResponse>(`/api/posts/${router.query.id}/answers`);
   const onInterestClick = () => {
     if (!data) return;
     mutate({
@@ -46,8 +59,23 @@ const CommunityPostDetail: NextPage = () => {
       },
       isInterested: !data.isInterested,
     }, false); // true: mutate는 캐시 값 업데이트를 하면서 API에 그 데이터가 맞는지 확인하는 request를 보냄
-    interest({});
+
+    if (!loading) { // 빠르게 여러번 버튼을 클릭하는 경우 race condition 발생을 방지하기 위해 이전 요청 끝난 후 다시 요청이 가도록
+      interest({});
+    }
   };
+
+  const onValid = (form: AnswerForm) => {
+    console.log("answer", form);
+    if (answerLoading)
+      return;
+    sendAnswer(form);
+  };
+  useEffect(() => {
+    if (answerData && answerData.ok) {
+      reset();  // form 비우기 
+    }
+  }, [answerData, reset]);
 
   console.log("post data", data);
   return (
@@ -125,7 +153,7 @@ const CommunityPostDetail: NextPage = () => {
                   {answer.user.name}
                 </span>
                 <span className="text-xs text-gray-500 block ">
-                  {answer.createdAt.toString()}
+                  {answer.createdAt?.toString()}
                 </span>
                 <p className="text-gray-700 mt-2">
                   {answer.answer}
@@ -134,16 +162,17 @@ const CommunityPostDetail: NextPage = () => {
             </div>
           ))}
         </div>
-        <div className="px-4">
+        <form className="px-4" onSubmit={handleSubmit(onValid)}>
           <TextArea
             name="description"
             placeholder="Answer this question!"
             required
+            register={register("answer", { required: true, minLength: 1 })}
           />
           <button className="mt-2 w-full bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 focus:outline-none ">
-            Reply
+            {answerLoading ? "Loading..." : "Reply"}
           </button>
-        </div>
+        </form>
       </div>
     </Layout>
   );
