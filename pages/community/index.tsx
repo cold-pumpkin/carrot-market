@@ -22,7 +22,10 @@ interface PostsResponse {
 const Community: NextPage = () => {
   const { latitude, longitude } = useCoords();
   const { data } = useSWR<PostsResponse>(
-    `/api/posts?latitude=${latitude}&longitude=${longitude}`
+    // Next.js에서는 페이지가 pre-generate 되기 때문에 초기값(useCoords에서 셋팅한 null)으로 실행됨
+    latitude && longitude // 값 셋팅된 후 실행되도록
+      ? `/api/posts?latitude=${latitude}&longitude=${longitude}`
+      : null
   );
   return (
     <Layout hasTabBar title="동네생활">
