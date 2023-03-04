@@ -74,8 +74,9 @@ const CommunityPostDetail: NextPage = () => {
   useEffect(() => {
     if (answerData && answerData.ok) {
       reset();  // form 비우기 
+      mutate(); // post 데이터 refetch (post의 answers는 성능을 위해 pagenation 필요)
     }
-  }, [answerData, reset]);
+  }, [answerData, reset, mutate]);
 
   console.log("post data", data);
   return (
