@@ -8,13 +8,13 @@ async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseType>
 ) {
-  const {
-    body: { question, latitude, longitude },
-    session: { user },
-  } = req;
-
   // 포스트 작성
   if (req.method === "POST") {
+    const {
+      body: { question, latitude, longitude },
+      session: { user },
+    } = req;
+
     const post = await client.post.create({
       data: {
         question,
@@ -36,6 +36,11 @@ async function handler(
 
   // 전체 포스트 조회
   if (req.method === "GET") {
+    const {
+      query: { latitude, longitude }  // URL의 쿼리 파라미터 정보
+    } = req;
+    const parsedLatitude = parseFloat(latitude!.toString());
+    const parsedLongitude = parseFloat(longitude!.toString());
     const posts = await client.post.findMany({
       include: {
         user: {
@@ -52,6 +57,16 @@ async function handler(
           }
         }
       },
+      where: {
+        latitude: {
+          gte: parsedLatitude - 0.01,  // greater than or equals
+          lte: parsedLatitude + 0.01,  // less than or equals
+        },
+        longitude: {
+          gte: parsedLongitude - 0.01,
+          lte: parsedLongitude + 0.01,
+        }
+      }
     });
     
     res.json({
@@ -60,8 +75,6 @@ async function handler(
     });
   }
 
-  
-	
 	return res.status(200).end();
 }
 
