@@ -12,7 +12,8 @@ interface ProductsResponse {
   ok: boolean;
   products: (Product & {
     _count: {
-      favorites: number;
+      records: number;
+      // favorites: number;
     };
   })[];
 }
@@ -35,7 +36,7 @@ const Home: NextPage = () => {
             title={product.name}
             price={product.price}
             comments={1}
-            hearts={product._count.favorites}
+            hearts={product._count.records}
           />
         ))}
         <FloatingButton href="/products/upload">
