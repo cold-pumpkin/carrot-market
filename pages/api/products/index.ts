@@ -12,8 +12,12 @@ async function handler(
       include: {
         _count: {
           select: {
-            favorites: true,
-          }
+            records: {
+              where: {
+                kind: 'Favorite'
+              }
+            }
+          },
         }
       }
     });

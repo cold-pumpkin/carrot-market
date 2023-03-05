@@ -1,5 +1,3 @@
-
-
 import { NextApiRequest, NextApiResponse } from "next";
 import withHandler, { ResponseType } from "@libs/server/withHandler";
 import client from "@libs/server/client";
@@ -42,10 +40,11 @@ async function handler(
   });
 
   const isLiked = Boolean(
-    await client.favorite.findFirst({
+    await client.record.findFirst({
       where: {
         productId: product?.id,
         userId: user?.id,
+        kind: 'Favorite'
       },
       select: {
         id: true,
