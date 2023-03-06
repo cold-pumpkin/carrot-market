@@ -16,19 +16,31 @@ async function handler(
   
   console.log("records", kind);
 
-  const favorites = await client.record.findMany({
+  const records = await client.record.findMany({
     where: {
       userId: user?.id,
       kind: kind as Kind
     },
     include: {
-      product: true,
+      product: {
+        include: {
+          _count: {
+            select: {
+              records: {
+                where: {
+                  kind: 'Favorite'
+                }
+              }
+            }
+          }
+        }
+      }
     }
   });
 
   res.json({
     ok: true,
-    favorites,
+    records,
   });
 	
 	return res.status(200).end();

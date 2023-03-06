@@ -8,7 +8,8 @@ import useSWR from "swr";
 import { Product } from "@prisma/client";
 
 
-interface ProductsResponse {
+export interface ProductsResponse extends Product {
+  [x: string]: any;
   ok: boolean;
   products: (Product & {
     _count: {
@@ -35,7 +36,7 @@ const Home: NextPage = () => {
             key={product.id}
             title={product.name}
             price={product.price}
-            comments={1}
+            comments={10}
             hearts={product._count.records}
           />
         ))}

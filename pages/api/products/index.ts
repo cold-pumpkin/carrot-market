@@ -21,11 +21,13 @@ async function handler(
         }
       }
     });
+
     res.json({
       ok: true,
       products,
     });
   }
+  
   if (req.method === "POST") {
     const {
       body: { name, price, description },
@@ -44,6 +46,7 @@ async function handler(
         },
       },
     });
+
     res.json({
       ok: true,
       product,
