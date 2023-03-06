@@ -11,6 +11,7 @@ declare module "iron-session" {
   }
 }
 
+// /api/users/me
 async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseType>

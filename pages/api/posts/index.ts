@@ -68,7 +68,7 @@ async function handler(
         }
       }
     });
-    
+    console.log('ggg', parsedLatitude, parsedLongitude);
     res.json({
       ok: true,
       posts,
