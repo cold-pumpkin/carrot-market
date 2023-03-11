@@ -1,3 +1,4 @@
+
 import { NextApiRequest, NextApiResponse } from "next";
 import withHandler, { ResponseType } from "@libs/server/withHandler";
 import client from "@libs/server/client";
@@ -8,23 +9,19 @@ async function handler(
   res: NextApiResponse<ResponseType>
 ) {
   const {
-    query: {id}
+    query: { id },
   } = req;
-
-  const stream = client.stream.findUnique({
+  const stream = await client.stream.findUnique({
     where: {
       id: Number(id?.toString()),
     },
   });
-  // not found error 처리 필요!
-  
-  res.json({
-    ok: true,
-    stream,
-  });
+  res.json({ ok: true, stream });
 }
 
-export default withApiSession(withHandler({
-	methods: ["GET"],
-	handler: handler
-}));	
+export default withApiSession(
+  withHandler({
+    methods: ["GET"],
+    handler,
+  })
+);
