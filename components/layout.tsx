@@ -114,9 +114,9 @@ export default function Layout({
             </svg>
             <span>채팅</span>
           </Link>
-          <Link href="/live" className={cls(
+          <Link href="/streams" className={cls(
                 "flex flex-col items-center space-y-2 ",
-                router.pathname === "/live"
+                router.pathname === "/streams"
                   ? "text-orange-500"
                   : "hover:text-gray-500 transition-colors"
             )}>
