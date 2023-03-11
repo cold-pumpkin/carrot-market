@@ -36,7 +36,7 @@ const Create: NextPage = () => {
 
   return (
     <Layout canGoBack title="Go Live">
-      <form onSubmit={ handleSubmit(onValid)} className=" space-y-4 py-10 px-4">
+      <form onSubmit={ handleSubmit(onValid)} className="space-y-4 py-10 px-4">
         <Input
           register={register("name", { required: true})}
           required
@@ -45,7 +45,7 @@ const Create: NextPage = () => {
           type="text"
         />
         <Input
-          register={register("price", { required: true})}
+          register={register("price", { required: true, valueAsNumber: true })}
           required
           label="Price"
           name="price"
