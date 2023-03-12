@@ -21,7 +21,7 @@ const Streams: NextPage = () => {
   const { data, mutate } = useSWR<StreamsResponse>(`/api/streams?page=${page}`);
 
   useEffect(() => {
-    if (!data?.streams && !data?.streams.length) return;
+    if (!data?.streams && !data?.streams?.length) return;
     setStreams(streams.concat(data.streams));
   }, [data]);
 
