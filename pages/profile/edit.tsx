@@ -39,13 +39,27 @@ const EditProfile: NextPage = () => {
 
   const [editProfile, { data, loading }] = useMutation<EditProfileResponse>(`/api/users/me`);
 
-  const onValid = ({ email, phone, name, avatar }: EditProfileForm) => {
+  const onValid = async ({ email, phone, name, avatar }: EditProfileForm) => {
     if (loading) return;
     if (email === '' && phone === '' && name === '') {
       return setError("formErrors", { message: "이메일 혹은 휴대폰 번호 정보를 입력해주세요!" });
     }
 
-    editProfile({ email, phone, name });
+    if (avatar && avatar.length > 0) {  // 아바타 이미지 업로드 한 경우
+      // CloudFlare에 URL 요청
+      const cloudflareRequest = await (await fetch(`/api/files`)).json();
+      console.log("cloudflareRequest", cloudflareRequest);
+      // 전달받은 URL에 파일 업로드
+
+      editProfile({
+        email,
+        phone,
+        name,
+        //avatarURL
+      });
+    } else {
+      editProfile({ email, phone, name });
+    }
   };
 
   useEffect(() => {
@@ -58,7 +72,6 @@ const EditProfile: NextPage = () => {
   const avatar = watch("avatar");
   useEffect(() => {
     if (avatar && avatar.length > 0) {
-      console.log(avatar);
       const file = avatar[0];
       setAvatarPreview(URL.createObjectURL(file));  // 브라우저 메모리에 있는 이미지의 URL에 접근
     }
@@ -66,15 +79,16 @@ const EditProfile: NextPage = () => {
 
   return (
     <Layout canGoBack title="Edit Profile">
-      <form onSubmit={handleSubmit(onValid)} className="zpy-10 px-4 space-y-4">
+      <form onSubmit={handleSubmit(onValid)} className="py-10 px-4 space-y-4">
         <div className="flex items-center space-x-3">
-          {avatarPreview ?
+          {avatarPreview ? (
             <img
               src={avatarPreview}
               className="w-14 h-14 rounded-full bg-slate-500"
-            /> :
+            />
+          ) : (
             <div className="w-14 h-14 rounded-full bg-slate-500" />
-          }
+          )}
           <label
             htmlFor="picture"
             className="cursor-pointer py-2 px-3 border hover:bg-gray-50 border-gray-300 rounded-md shadow-sm text-sm font-medium focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 text-gray-700"

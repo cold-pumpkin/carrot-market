@@ -19,17 +19,29 @@ async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseType>
 ) {
+  const response = await (
+    await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID}/images/v1/direct_upload`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
+        },
+      }
+    )
+  ).json();
 
+  console.log("respnose", response);
 
   res.json({
     ok: true,
-    url: "",
+    ...response.result,
   });
 
   return res.status(200).end();
 }
 
 export default withApiSession(withHandler({
-  methods: ["POST"],
+  methods: ["GET"],
   handler,
 }));	
