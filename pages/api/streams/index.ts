@@ -31,11 +31,21 @@ async function handler(
       stream,
     });
   } else if (req.method === "GET") {
-    const streams = await client.stream.findMany();  // TODO : pagination 추가
+    //const streams = await client.stream.findMany({});  // TODO : pagination 추가
+    
+    // 무한 스크롤
+    const { page } = req.query;
+    const offset = 10;
+
+    const streams = await client.stream.findMany({
+      take: offset,
+      skip: (Number(page) - 1) * offset,
+    });
 
     res.json({
       ok: true,
       streams,
+      ...(streams.length === 0 ? { end: true } : {}),
     });
   }
 }
