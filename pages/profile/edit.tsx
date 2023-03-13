@@ -35,6 +35,7 @@ const EditProfile: NextPage = () => {
     if (user?.email) setValue("email", user.email);
     if (user?.phone) setValue("phone", user.phone);
     if (user?.name) setValue("name", user.name);
+    if (user?.avatar) setAvatarPreview(`https://imagedelivery.net/GC0pyhdjUdK97SBzioU4nA/${user?.avatar}/public`);
   }, [user, setValue]);
 
   const [editProfile, { data, loading }] = useMutation<EditProfileResponse>(`/api/users/me`);
@@ -47,21 +48,25 @@ const EditProfile: NextPage = () => {
 
     if (avatar && avatar.length > 0 && user) {  // 아바타 이미지 업로드 한 경우
       // CloudFlare에 URL 요청
-      const { id, uploadURL } = await (await fetch(`/api/files`)).json();
+      const { uploadURL } = await (await fetch(`/api/files`)).json();
       const form = new FormData();
       form.append("file", avatar[0], user?.id.toString());  // CloudFlare에 저장할 파일명을 유저ID로 변경
 
       // 전달받은 URL에 파일 업로드
-      await fetch(uploadURL, {
-        method: "POST",
-        body: form,
-      });
+      const {
+        result: { id }
+      } = await (
+        await fetch(uploadURL, {
+          method: "POST",
+          body: form,
+        })
+      ).json();
 
       editProfile({
         email,
         phone,
         name,
-        //avatarURL
+        avatarId: id,
       });
     } else {
       editProfile({ email, phone, name });
