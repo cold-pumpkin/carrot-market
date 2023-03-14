@@ -27,10 +27,10 @@ async function handler(
       products,
     });
   }
-  
+
   if (req.method === "POST") {
     const {
-      body: { name, price, description },
+      body: { name, price, description, photoId },
       session: { user },
     } = req;
     const product = await client.product.create({
@@ -38,7 +38,7 @@ async function handler(
         name,
         price: +price,
         description,
-        image: "xx",
+        image: photoId,
         user: {
           connect: {
             id: user?.id,
@@ -55,7 +55,7 @@ async function handler(
 }
 
 export default withApiSession(withHandler({
-	methods: ["GET", "POST"], 
-	handler: handler, 
-	isPrivate: true		// true인 경우 로그인 유저만 호출 가능
+  methods: ["GET", "POST"],
+  handler: handler,
+  isPrivate: true		// true인 경우 로그인 유저만 호출 가능
 }));	
